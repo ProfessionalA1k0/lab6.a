@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Головна</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css"> 
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Ботанічний Сад</h1>
+        </div>        
+
+        <div class="left">
+            <nav>
+                <ul>
+                    <li><a href="index.html">ГОЛОВНА</a></li>
+                    <li><a href="page1.html">ПРО НАС</a></li>
+                    <li><a href="page2.html">ІСТОРІЯ</a></li>
+                    <li><a href="page3.html">ЕКСПОЗИЦІЇ</a></li>
+                    <li><a href="page4.html">ВІДВІДУВАЧАМ</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="center">
+            <div class="dropdown-section">
+                <h2>Динамічне створення Dropdown</h2>
+                <form id="dropdown-form">
+                    <label for="dropdown-title">Заголовок Dropdown:</label>
+                    <input type="text" id="dropdown-title" name="dropdown-title" required>
+                    <label for="dropdown-items">Елементи (через кому):</label>
+                    <input type="text" id="dropdown-items" name="dropdown-items" required>
+                    <button type="button" id="add-dropdown">Додати Dropdown</button>
+                </form>
+                <div id="dropdown-container"></div>
+                <button type="button" id="save-dropdowns">Зберегти Dropdown</button>
+            </div>
+        </div>
+
+        <div class="right">
+            <h3>Галерея зображень</h3>
+            <a href="images/схема.jpg" target="_blank">
+                <img src="images/схема.jpg">
+            </a>
+            <a href="images/картинка1.jpg" target="_blank">
+                <img src="images/картинка1.jpg">
+            </a>
+            <a href="images/картинка2.jpg" target="_blank">
+                <img src="images/картинка2.jpg">
+            </a>
+        </div>
+
+        <div class="center-footer">
+            <p>Слідкуйте за нами:</p>
+            <a href="#" target="_blank"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" target="_blank"><i class="fab fa-instagram"></i></a>
+            <a href="#" target="_blank"><i class="fab fa-twitter"></i></a>
+        </div>
+
+        <div class="footer">
+            <div>
+                <h3>Бережіть природу</h3>
+                <p>АДРЕСА: вул. Зелених рослин, 10</p>
+                <p>ТЕЛЕФОН: (123) 456-7890</p>
+                <p>ЕЛЕКТРОННА ПОШТА: info@botanicalgarden.com</p>
+            </div>
+            <div>
+                <p>ГОДИНИ РОБОТИ:</p>
+                <p>Пн-Пт: 9:00 - 17:00</p>
+                <p>Сб-Нд: 10:00 - 16:00</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dropdownContainer = document.getElementById('dropdown-container');
+        const addDropdownButton = document.getElementById('add-dropdown');
+        const saveDropdownButton = document.getElementById('save-dropdowns');
+        
+        // Функція для додавання перетягування Dropdown
+        function makeDropdownsDraggable() {
+            const dropdowns = dropdownContainer.querySelectorAll('.dropdown');
+            dropdowns.forEach((dropdown) => {
+                dropdown.draggable = true;
+        
+                dropdown.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', dropdown.id);
+                    dropdown.classList.add('dragging');
+                });
+        
+                dropdown.addEventListener('dragend', () => {
+                    dropdown.classList.remove('dragging');
+                });
+            });
+        
+            dropdownContainer.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const draggingDropdown = document.querySelector('.dragging');
+                const afterElement = getDragAfterElement(dropdownContainer, e.clientY);
+                if (afterElement == null) {
+                    dropdownContainer.appendChild(draggingDropdown);
+                } else {
+                    dropdownContainer.insertBefore(draggingDropdown, afterElement);
+                }
+            });
+        }
+        
+        // Функція для редагування Dropdown
+        function enableDropdownEditing(dropdown) {
+            dropdown.addEventListener('dblclick', () => {
+                const currentTitle = dropdown.querySelector('h3').innerText;
+                const currentItems = Array.from(dropdown.querySelectorAll('li')).map((li) => li.innerText);
+        
+                // Створення форми редагування
+                const editForm = document.createElement('form');
+                editForm.classList.add('edit-form');
+                editForm.innerHTML = `
+                    <label>Заголовок Dropdown:</label>
+                    <input type="text" value="${currentTitle}" class="edit-title" required>
+                    <label>Елементи (через кому):</label>
+                    <input type="text" value="${currentItems.join(', ')}" class="edit-items" required>
+                    <button type="submit">Зберегти</button>
+                    <button type="button" class="cancel-edit">Скасувати</button>
+                `;
+        
+                // Замінити Dropdown на форму редагування
+                dropdown.replaceWith(editForm);
+        
+                // Обробка збереження
+                editForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const newTitle = editForm.querySelector('.edit-title').value;
+                    const newItems = editForm.querySelector('.edit-items').value.split(',').map((item) => item.trim());
+        
+                    // Оновлення Dropdown
+                    dropdown.querySelector('h3').innerText = newTitle;
+                    dropdown.querySelector('ul').innerHTML = newItems.map((item) => `<li>${item}</li>`).join('');
+                    editForm.replaceWith(dropdown);
+                });
+        
+                // Обробка скасування
+                editForm.querySelector('.cancel-edit').addEventListener('click', () => {
+                    editForm.replaceWith(dropdown);
+                });
+            });
+        }
+        
+        // Отримання елемента перед точкою перетягування
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.dropdown:not(.dragging)')];
+            return draggableElements.reduce(
+                (closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                },
+                { offset: Number.NEGATIVE_INFINITY }
+            ).element;
+        }
+        
+        // Додавання нового Dropdown
+        addDropdownButton.addEventListener('click', () => {
+            const title = document.getElementById('dropdown-title').value;
+            const items = document.getElementById('dropdown-items').value.split(',');
+        
+            if (title && items.length > 0) {
+                const dropdownDiv = document.createElement('div');
+                dropdownDiv.classList.add('dropdown');
+                dropdownDiv.id = `dropdown-${Date.now()}`; // Унікальний ID для кожного Dropdown
+                dropdownDiv.innerHTML = `
+                    <h3>${title}</h3>
+                    <ul>
+                        ${items.map((item) => `<li>${item.trim()}</li>`).join('')}
+                    </ul>
+                `;
+                dropdownContainer.appendChild(dropdownDiv);
+        
+                // Зробити всі Dropdown елементи перетягуваними
+                makeDropdownsDraggable();
+        
+                // Додати можливість редагування
+                enableDropdownEditing(dropdownDiv);
+        
+                // Очистка полів форми
+                document.getElementById('dropdown-title').value = '';
+                document.getElementById('dropdown-items').value = '';
+            }
+        });
+        
+        // Збереження Dropdown
+        saveDropdownButton.addEventListener('click', async () => {
+            const dropdowns = Array.from(dropdownContainer.querySelectorAll('.dropdown')).map((dropdown) => ({
+                title: dropdown.querySelector('h3').innerText,
+                items: Array.from(dropdown.querySelectorAll('li')).map((li) => li.innerText)
+            }));
+        
+            try {
+                const response = await fetch('save_dropdowns.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ dropdowns })
+                });
+                const result = await response.json();
+                alert(result.message);
+            } catch (error) {
+                console.error('Помилка збереження:', error);
+                alert('Сталася помилка під час збереження.');
+            }
+        });
+        
+    </script>
+</body>
+</html>
